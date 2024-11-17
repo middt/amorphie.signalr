@@ -16,12 +16,12 @@ public class NotificationHub : Hub
         _context = context;
     }
     public static bool IsUserConnected(string userId) =>
-    !string.IsNullOrEmpty(userId) && _connectedUsers.Any(x=>x.Value == userId);
+    !string.IsNullOrEmpty(userId) && _connectedUsers.Any(x => x.Value == userId);
 
     public override async Task OnConnectedAsync()
     {
-        var userId = Context.UserIdentifier;
-        if (userId != null)
+        var userId = Context.GetHttpContext()?.Request.Headers["X-User-Id"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(userId))
         {
             _connectedUsers[Context.ConnectionId] = userId;
             await ResendUnacknowledgedMessages(userId);

@@ -8,6 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dapr", "dapr", "{6E8172F9-B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{AC621F96-3BC8-4B4C-81A3-8C89AC1E3647}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "amorphie.signalr.tests", "amorphie.signalr.tests\amorphie.signalr.tests.csproj", "{7FB7C733-863D-4DBE-8529-5D1322352441}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +20,10 @@ Global
 		{0C17B487-D756-436F-9DF4-5A26D69180ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C17B487-D756-436F-9DF4-5A26D69180ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C17B487-D756-436F-9DF4-5A26D69180ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FB7C733-863D-4DBE-8529-5D1322352441}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FB7C733-863D-4DBE-8529-5D1322352441}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FB7C733-863D-4DBE-8529-5D1322352441}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FB7C733-863D-4DBE-8529-5D1322352441}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AC621F96-3BC8-4B4C-81A3-8C89AC1E3647} = {6E8172F9-B07B-41F4-97C1-33D4DCAA5A72}
