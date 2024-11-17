@@ -56,6 +56,19 @@ amorphie.signalr is a real-time notification system built using ASP.NET Core Sig
 
 ### System Context Diagram
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f0f0', 'primaryTextColor': '#333', 'secondaryColor': '#e0e0e0', 'tertiaryColor': '#d0d0d0' }}}%%
+flowchart TB
+    client[Client Application<br>Application consuming real-time notifications]
+    notificationSystem[amorphie.signalr<br>Real-time notification delivery system]
+    externalSystem[External Systems<br>Message producers]
+    database[(Database<br>Stores messages and user data)]
+
+    client -->|Receives notifications<br>SignalR/WebSocket/LongPolling| notificationSystem
+    externalSystem -->|Sends notifications<br>HTTP/REST| notificationSystem
+    notificationSystem -->|Stores/Retrieves<br>Entity Framework Core| database
+```
+
 ```plantuml
 @startuml C4_Context
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
