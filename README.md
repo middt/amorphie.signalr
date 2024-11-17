@@ -56,7 +56,7 @@ amorphie.signalr is a real-time notification system built using ASP.NET Core Sig
 
 ### System Context Diagram
 
-![C4_Context](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/middt/amorphie.signalr/refs/heads/main/Diagrams/C4_Context.iuml
+![C4_Context](https://raw.githubusercontent.com/middt/amorphie.signalr/refs/heads/main/Diagrams/C4_Context.iuml)
 
 ### Container Diagram
 
