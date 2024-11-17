@@ -69,149 +69,119 @@ flowchart TB
     notificationSystem -->|Stores/Retrieves<br>Entity Framework Core| database
 ```
 
-```plantuml
-@startuml C4_Context
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
-
-LAYOUT_WITH_LEGEND()
-
-Person(client, "Client Application", "Application consuming real-time notifications")
-System(notificationSystem, "amorphie.signalr", "Real-time notification delivery system")
-System_Ext(externalSystem, "External Systems", "Message producers")
-System_Ext(database, "Database", "Stores messages and user data")
-
-Rel(client, notificationSystem, "Receives notifications", "SignalR/WebSocket/LongPolling")
-Rel(externalSystem, notificationSystem, "Sends notifications", "HTTP/REST")
-Rel(notificationSystem, database, "Stores/Retrieves", "Entity Framework Core")
-
-@enduml
-```
+`
 
 ### Container Diagram
 
-```plantuml
-@startuml C4_Container
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f0f0', 'primaryTextColor': '#333', 'secondaryColor': '#e0e0e0', 'tertiaryColor': '#d0d0d0' }}}%%
+flowchart TB
+    client[Client Application<br>Application consuming real-time notifications]
+    externalSystem[External Systems<br>Message producers]
 
-LAYOUT_WITH_LEGEND()
+    subgraph notificationSystem[amorphie.signalr]
+        api[API Application<br>ASP.NET Core<br>Handles HTTP requests]
+        signalR[NotificationHub<br>SignalR Hub<br>Manages real-time connections]
+        messageService[MessageService<br>C# Service<br>Message processing and persistence]
+        retryService[MessageRetryService<br>Background Service<br>Handles message retries]
+        database[(Database<br>In-Memory/SQL<br>Stores messages and state)]
+    end
 
-Person(client, "Client Application", "Application consuming real-time notifications")
-System_Ext(externalSystem, "External Systems", "Message producers")
+    client -->|Sends/Receives via<br>HTTP/REST| api
+    client -->|Connects via<br>WebSocket/LongPolling| signalR
+    externalSystem -->|Sends messages via<br>HTTP/REST| api
+    api -->|Uses| messageService
+    signalR -->|Uses| messageService
+    messageService -->|Reads/Writes| database
+    retryService -->|Monitors| database
+    retryService -->|Triggers redelivery| signalR
 
-System_Boundary(notificationSystem, "amorphie.signalr") {
-    Container(api, "API Application", "ASP.NET Core", "Handles HTTP requests")
-    Container(signalR, "NotificationHub", "SignalR Hub", "Manages real-time connections")
-    Container(messageService, "MessageService", "C# Service", "Message processing and persistence")
-    Container(retryService, "MessageRetryService", "Background Service", "Handles message retries")
-    ContainerDb(database, "Database", "In-Memory/SQL", "Stores messages and state")
-}
-
-Rel(client, api, "Sends/Receives via", "HTTP/REST")
-Rel(client, signalR, "Connects via", "WebSocket/LongPolling")
-Rel(externalSystem, api, "Sends messages via", "HTTP/REST")
-Rel(api, messageService, "Uses")
-Rel(signalR, messageService, "Uses")
-Rel(messageService, database, "Reads/Writes")
-Rel(retryService, database, "Monitors")
-Rel(retryService, signalR, "Triggers redelivery")
-
-@enduml
 ```
 
 ### Component Diagram
 
-```plantuml
-@startuml C4_Component
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f0f0', 'primaryTextColor': '#333', 'secondaryColor': '#e0e0e0', 'tertiaryColor': '#d0d0d0' }}}%%
+flowchart TB
+    subgraph api[API Application]
+        notificationHub[NotificationHub<br>SignalR Hub<br>Manages real-time connections and message delivery]
+        messageEndpoints[Message Endpoints<br>ASP.NET Core<br>HTTP endpoints for message operations]
+        messageService[MessageService<br>C# Service<br>Handles message processing and persistence]
+        retryService[MessageRetryService<br>Background Service<br>Handles message retries and expiration]
+        dbContext[ApplicationDbContext<br>EF Core<br>Data access layer]
 
-LAYOUT_WITH_LEGEND()
+        inMemoryDb[(In-Memory Database<br>EF Core InMemory<br>Stores messages and state)]
+    end
 
-Container_Boundary(api, "API Application") {
-    Component(notificationHub, "NotificationHub", "SignalR Hub", "Manages real-time connections and message delivery")
-    Component(messageEndpoints, "Message Endpoints", "ASP.NET Core", "HTTP endpoints for message operations")
-    Component(messageService, "MessageService", "C# Service", "Handles message processing and persistence")
-    Component(retryService, "MessageRetryService", "Background Service", "Handles message retries and expiration")
-    Component(dbContext, "ApplicationDbContext", "EF Core", "Data access layer")
+    messageEndpoints -->|Uses| messageService
+    notificationHub -->|Uses| messageService
+    messageService -->|Uses| dbContext
+    retryService -->|Uses| dbContext
+    dbContext -->|Reads/Writes| inMemoryDb
+    retryService -->|Triggers redelivery| notificationHub
 
-    ComponentDb(inMemoryDb, "In-Memory Database", "EF Core InMemory", "Stores messages and state")
-}
-
-Rel(messageEndpoints, messageService, "Uses")
-Rel(notificationHub, messageService, "Uses")
-Rel(messageService, dbContext, "Uses")
-Rel(retryService, dbContext, "Uses")
-Rel(dbContext, inMemoryDb, "Reads/Writes")
-Rel(retryService, notificationHub, "Triggers redelivery")
-
-@enduml
 ```
 
 ### Message Flow Diagram
 
-```plantuml
-@startuml Message_Flow
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f0f0', 'primaryTextColor': '#333', 'secondaryColor': '#e0e0e0', 'tertiaryColor': '#d0d0d0' }}}%%
+sequenceDiagram
+    participant Client
+    participant API
+    participant NotificationHub as Hub
+    participant MessageService as Service
+    participant Database as DB
 
-actor Client
-participant "API" as API
-participant "NotificationHub" as Hub
-participant "MessageService" as Service
-database "Database" as DB
+    Client ->>+ API: Send Message
+    API ->>+ Service: Process Message
+    Service ->>+ DB: Store Message
+    Service ->>+ Hub: Attempt Delivery
+    Hub ->>+ Client: Deliver Message
+    Client ->>+ API: Acknowledge Message
+    API ->>+ Service: Process Acknowledgment
+    Service ->>+ DB: Update Message Status
 
-== Message Sending ==
-Client -> API: Send Message
-API -> Service: Process Message
-Service -> DB: Store Message
-Service -> Hub: Attempt Delivery
-Hub -> Client: Deliver Message
-Client -> API: Acknowledge Message
-API -> Service: Process Acknowledgment
-Service -> DB: Update Message Status
-
-== Message Retry ==
-box "Background Process" #LightBlue
-    participant "RetryService" as Retry
-end box
-
-Retry -> DB: Find Unacknowledged Messages
-DB -> Retry: Return Messages
-loop for each unacknowledged message
-    Retry -> Hub: Attempt Redelivery
-    Hub -> Client: Deliver Message
-    alt success
-        Client -> API: Acknowledge Message
-        API -> Service: Process Acknowledgment
-        Service -> DB: Update Message Status
-    else timeout
-        Retry -> DB: Update Retry Count
+    box LightBlue "Background Process"
+        participant RetryService as Retry
     end
-end
 
-@enduml
+    Retry ->>+ DB: Find Unacknowledged Messages
+    DB ->>+ Retry: Return Messages
+    loop for each unacknowledged message
+        Retry ->>+ Hub: Attempt Redelivery
+        Hub ->>+ Client: Deliver Message
+        alt success
+            Client ->>+ API: Acknowledge Message
+            API ->>+ Service: Process Acknowledgment
+            Service ->>+ DB: Update Message Status
+        else timeout
+            Retry ->>+ DB: Update Retry Count
+        end
+    end
+
 ```
 
 ### Message State Diagram
 
-```plantuml
-@startuml Message_State
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_State.puml
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#f0f0f0', 'primaryTextColor': '#333', 'secondaryColor': '#e0e0e0', 'tertiaryColor': '#d0d0d0' }}}%%
+stateDiagram
+    [*] --> Created: Message Created
+    Created --> Delivered: Delivery Attempted
+    Delivered --> Acknowledged: Client Acknowledges
+    Delivered --> RetryQueue: Delivery Failed
+    RetryQueue --> Delivered: Retry Attempt
+    RetryQueue --> Expired: Max Retries Exceeded or Timeout Reached
+    Acknowledged --> [*]
+    Expired --> [*]
 
-[*] --> Created: Message Created
-Created --> Delivered: Delivery Attempted
-Delivered --> Acknowledged: Client Acknowledges
-Delivered --> RetryQueue: Delivery Failed
-RetryQueue --> Delivered: Retry Attempt
-RetryQueue --> Expired: Max Retries Exceeded\nor Timeout Reached
-Acknowledged --> [*]
-Expired --> [*]
+    state RetryQueue {
+        [*] --> Waiting
+        Waiting --> RetryingDelivery: User Connected
+        RetryingDelivery --> Waiting: Delivery Failed
+    }
 
-state RetryQueue {
-    [*] --> Waiting
-    Waiting --> RetryingDelivery: User Connected
-    RetryingDelivery --> Waiting: Delivery Failed
-}
-
-@enduml
 ```
 
 ## Implementation Details
