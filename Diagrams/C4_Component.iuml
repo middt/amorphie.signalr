@@ -1,0 +1,23 @@
+@startuml C4_Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+Container_Boundary(api, "API Application") {
+    Component(notificationHub, "NotificationHub", "SignalR Hub", "Manages real-time connections and message delivery")
+    Component(messageEndpoints, "Message Endpoints", "ASP.NET Core", "HTTP endpoints for message operations")
+    Component(messageService, "MessageService", "C# Service", "Handles message processing and persistence")
+    Component(retryService, "MessageRetryService", "Background Service", "Handles message retries and expiration")
+    Component(dbContext, "ApplicationDbContext", "EF Core", "Data access layer")
+
+    ComponentDb(inMemoryDb, "In-Memory Database", "EF Core InMemory", "Stores messages and state")
+}
+
+Rel(messageEndpoints, messageService, "Uses")
+Rel(notificationHub, messageService, "Uses")
+Rel(messageService, dbContext, "Uses")
+Rel(retryService, dbContext, "Uses")
+Rel(dbContext, inMemoryDb, "Reads/Writes")
+Rel(retryService, notificationHub, "Triggers redelivery")
+
+@enduml

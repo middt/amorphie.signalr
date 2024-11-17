@@ -1,0 +1,26 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(client, "Client Application", "Application consuming real-time notifications")
+System_Ext(externalSystem, "External Systems", "Message producers")
+
+System_Boundary(notificationSystem, "amorphie.signalr") {
+    Container(api, "API Application", "ASP.NET Core", "Handles HTTP requests")
+    Container(signalR, "NotificationHub", "SignalR Hub", "Manages real-time connections")
+    Container(messageService, "MessageService", "C# Service", "Message processing and persistence")
+    Container(retryService, "MessageRetryService", "Background Service", "Handles message retries")
+    ContainerDb(database, "Database", "In-Memory/SQL", "Stores messages and state")
+}
+
+Rel(client, api, "Sends/Receives via", "HTTP/REST")
+Rel(client, signalR, "Connects via", "WebSocket/LongPolling")
+Rel(externalSystem, api, "Sends messages via", "HTTP/REST")
+Rel(api, messageService, "Uses")
+Rel(signalR, messageService, "Uses")
+Rel(messageService, database, "Reads/Writes")
+Rel(retryService, database, "Monitors")
+Rel(retryService, signalR, "Triggers redelivery")
+
+@enduml

@@ -56,149 +56,30 @@ amorphie.signalr is a real-time notification system built using ASP.NET Core Sig
 
 ### System Context Diagram
 
-```plantuml
-@startuml C4_Context
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
-
-LAYOUT_WITH_LEGEND()
-
-Person(client, "Client Application", "Application consuming real-time notifications")
-System(notificationSystem, "amorphie.signalr", "Real-time notification delivery system")
-System_Ext(externalSystem, "External Systems", "Message producers")
-System_Ext(database, "Database", "Stores messages and user data")
-
-Rel(client, notificationSystem, "Receives notifications", "SignalR/WebSocket/LongPolling")
-Rel(externalSystem, notificationSystem, "Sends notifications", "HTTP/REST")
-Rel(notificationSystem, database, "Stores/Retrieves", "Entity Framework Core")
-
-@enduml
-```
+![C4_Context](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/middt/amorphie.signalr/refs/heads/main/Diagrams/C4_Context.iuml
 
 ### Container Diagram
 
 ```plantuml
-@startuml C4_Container
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-LAYOUT_WITH_LEGEND()
-
-Person(client, "Client Application", "Application consuming real-time notifications")
-System_Ext(externalSystem, "External Systems", "Message producers")
-
-System_Boundary(notificationSystem, "amorphie.signalr") {
-    Container(api, "API Application", "ASP.NET Core", "Handles HTTP requests")
-    Container(signalR, "NotificationHub", "SignalR Hub", "Manages real-time connections")
-    Container(messageService, "MessageService", "C# Service", "Message processing and persistence")
-    Container(retryService, "MessageRetryService", "Background Service", "Handles message retries")
-    ContainerDb(database, "Database", "In-Memory/SQL", "Stores messages and state")
-}
-
-Rel(client, api, "Sends/Receives via", "HTTP/REST")
-Rel(client, signalR, "Connects via", "WebSocket/LongPolling")
-Rel(externalSystem, api, "Sends messages via", "HTTP/REST")
-Rel(api, messageService, "Uses")
-Rel(signalR, messageService, "Uses")
-Rel(messageService, database, "Reads/Writes")
-Rel(retryService, database, "Monitors")
-Rel(retryService, signalR, "Triggers redelivery")
-
-@enduml
 ```
 
 ### Component Diagram
 
 ```plantuml
-@startuml C4_Component
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-LAYOUT_WITH_LEGEND()
-
-Container_Boundary(api, "API Application") {
-    Component(notificationHub, "NotificationHub", "SignalR Hub", "Manages real-time connections and message delivery")
-    Component(messageEndpoints, "Message Endpoints", "ASP.NET Core", "HTTP endpoints for message operations")
-    Component(messageService, "MessageService", "C# Service", "Handles message processing and persistence")
-    Component(retryService, "MessageRetryService", "Background Service", "Handles message retries and expiration")
-    Component(dbContext, "ApplicationDbContext", "EF Core", "Data access layer")
-
-    ComponentDb(inMemoryDb, "In-Memory Database", "EF Core InMemory", "Stores messages and state")
-}
-
-Rel(messageEndpoints, messageService, "Uses")
-Rel(notificationHub, messageService, "Uses")
-Rel(messageService, dbContext, "Uses")
-Rel(retryService, dbContext, "Uses")
-Rel(dbContext, inMemoryDb, "Reads/Writes")
-Rel(retryService, notificationHub, "Triggers redelivery")
-
-@enduml
 ```
 
 ### Message Flow Diagram
 
 ```plantuml
-@startuml Message_Flow
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml
 
-actor Client
-participant "API" as API
-participant "NotificationHub" as Hub
-participant "MessageService" as Service
-database "Database" as DB
-
-== Message Sending ==
-Client -> API: Send Message
-API -> Service: Process Message
-Service -> DB: Store Message
-Service -> Hub: Attempt Delivery
-Hub -> Client: Deliver Message
-Client -> API: Acknowledge Message
-API -> Service: Process Acknowledgment
-Service -> DB: Update Message Status
-
-== Message Retry ==
-box "Background Process" #LightBlue
-    participant "RetryService" as Retry
-end box
-
-Retry -> DB: Find Unacknowledged Messages
-DB -> Retry: Return Messages
-loop for each unacknowledged message
-    Retry -> Hub: Attempt Redelivery
-    Hub -> Client: Deliver Message
-    alt success
-        Client -> API: Acknowledge Message
-        API -> Service: Process Acknowledgment
-        Service -> DB: Update Message Status
-    else timeout
-        Retry -> DB: Update Retry Count
-    end
-end
-
-@enduml
 ```
 
 ### Message State Diagram
 
 ```plantuml
-@startuml Message_State
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_State.puml
 
-[*] --> Created: Message Created
-Created --> Delivered: Delivery Attempted
-Delivered --> Acknowledged: Client Acknowledges
-Delivered --> RetryQueue: Delivery Failed
-RetryQueue --> Delivered: Retry Attempt
-RetryQueue --> Expired: Max Retries Exceeded\nor Timeout Reached
-Acknowledged --> [*]
-Expired --> [*]
-
-state RetryQueue {
-    [*] --> Waiting
-    Waiting --> RetryingDelivery: User Connected
-    RetryingDelivery --> Waiting: Delivery Failed
-}
-
-@enduml
 ```
 
 ## Implementation Details
