@@ -8,6 +8,10 @@ using System.Linq;
 using amorphie.signalr.Database;
 using amorphie.signalr.Models;
 using amorphie.signalr.Services;
+using amorphie.signalr.Actors;
+using Dapr.Client;
+using Dapr.Actors.Runtime;
+using Dapr.Actors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +23,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddHostedService<MessageRetryService>();
+//builder.Services.AddHostedService<MessageRetryService>();
+
+// Add Dapr
+builder.Services.AddDaprClient();
+builder.Services.AddActors(options =>
+{
+    options.Actors.RegisterActor<MessageActor>();
+});
 
 var app = builder.Build();
 
@@ -30,8 +41,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
 app.UseRouting();
+app.UseCloudEvents();
+app.MapActorsHandlers();
 
 // SignalR Hub
 app.MapHub<NotificationHub>("/hubs/notification");

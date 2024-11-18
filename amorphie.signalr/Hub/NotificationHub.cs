@@ -54,7 +54,7 @@ public class NotificationHub : Hub
             Id = Guid.NewGuid().ToString(),
             UserId = userId,
             Content = messageContent,
-            IsAcknowledged = false,
+            State = MessageState.Created,
             Timestamp = DateTime.UtcNow
         };
 
@@ -72,7 +72,8 @@ public class NotificationHub : Hub
         var message = await _context.Messages.FindAsync(messageId);
         if (message != null && !message.IsAcknowledged)
         {
-            message.IsAcknowledged = true;
+            message.State = MessageState.Acknowledged;
+            message.AcknowledgedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
     }

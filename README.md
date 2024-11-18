@@ -190,11 +190,11 @@ stateDiagram
 
 ```json
 {
-	"MessageSettings": {
-		"DefaultMaxRetryAttempts": 3,
-		"DefaultMessageTimeout": "24:00:00",
-		"RetryInterval": "00:01:00"
-	}
+  "MessageSettings": {
+    "DefaultMaxRetryAttempts": 3,
+    "DefaultMessageTimeout": "24:00:00",
+    "RetryInterval": "00:01:00"
+  }
 }
 ```
 

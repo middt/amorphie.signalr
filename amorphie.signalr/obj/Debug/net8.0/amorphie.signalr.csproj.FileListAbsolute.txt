@@ -42,3 +42,13 @@
 /Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/obj/Debug/net8.0/amorphie.signalr.pdb
 /Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/obj/Debug/net8.0/amorphie.signalr.genruntimeconfig.cache
 /Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/obj/Debug/net8.0/ref/amorphie.signalr.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/obj/Debug/net8.0/amorphie.signalr.sourcelink.json
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Dapr.Actors.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Dapr.Actors.AspNetCore.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Dapr.AspNetCore.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Dapr.Client.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Google.Api.CommonProtos.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Google.Protobuf.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Grpc.Core.Api.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Grpc.Net.Client.dll
+/Users/mt/Projects/amorphie.signalr/amorphie.signalr/amorphie.signalr/bin/Debug/net8.0/Grpc.Net.Common.dll

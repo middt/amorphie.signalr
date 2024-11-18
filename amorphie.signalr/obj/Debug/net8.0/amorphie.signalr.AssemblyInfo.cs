@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("amorphie.signalr")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9df58a2e375639306568f8848a5205ee5b736797")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+735a7f7b34adae6ff8b805fc7105ee782fc37ba8")]
 [assembly: System.Reflection.AssemblyProductAttribute("amorphie.signalr")]
 [assembly: System.Reflection.AssemblyTitleAttribute("amorphie.signalr")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

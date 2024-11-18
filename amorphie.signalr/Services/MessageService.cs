@@ -3,94 +3,61 @@ using amorphie.signalr.Models;
 using amorphie.signalr.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Dapr.Actors.Runtime;
+using amorphie.signalr.Actors;
+using Microsoft.AspNetCore.SignalR;
+using Dapr.Actors;
+using Dapr.Actors.Client;
 
 public class MessageService : IMessageService
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly IActorProxyFactory _actorProxyFactory;
     private readonly ILogger<MessageService> _logger;
 
     public MessageService(
-        ApplicationDbContext context,
-        IHubContext<NotificationHub> hubContext,
+        IActorProxyFactory actorProxyFactory,
         ILogger<MessageService> logger)
     {
-        _context = context;
-        _hubContext = hubContext;
+        _actorProxyFactory = actorProxyFactory;
         _logger = logger;
     }
 
     public async Task<IEnumerable<Message>> GetUnacknowledgedMessagesAsync(string userId)
     {
-        return await _context.Messages
-            .Where(m => m.UserId == userId && !m.IsAcknowledged)
-            .ToListAsync();
+        var actorId = new ActorId($"user-{userId}");
+        var actor = _actorProxyFactory.CreateActorProxy<IMessageActor>(
+            actorId,
+            "MessageActor");
+
+        return await actor.GetUnacknowledgedMessagesAsync(userId);
     }
 
     public async Task<bool> AcknowledgeMessageAsync(string messageId)
     {
-        _logger.LogInformation("Attempting to acknowledge message {MessageId}", messageId);
-
-        var message = await _context.Messages.FindAsync(messageId);
-        if (message == null)
+        try
         {
-            _logger.LogWarning("Message {MessageId} not found", messageId);
+            var actorId = new ActorId(messageId);
+            var actor = _actorProxyFactory.CreateActorProxy<IMessageActor>(
+                actorId,
+                "MessageActor");
+
+            _logger.LogInformation("Acknowledging message {MessageId}", messageId);
+            return await actor.AcknowledgeMessageAsync(messageId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error acknowledging message {MessageId}", messageId);
             return false;
         }
-
-        if (message.IsAcknowledged)
-        {
-            _logger.LogInformation("Message {MessageId} was already acknowledged", messageId);
-            return false;
-        }
-
-        message.IsAcknowledged = true;
-        message.AcknowledgedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Message {MessageId} acknowledged successfully", messageId);
-        return true;
     }
 
     public async Task<Message> SendMessageAsync(string userId, string content)
     {
-        _logger.LogInformation("Attempting to send message to user {UserId}", userId);
+        var actorId = new ActorId(Guid.NewGuid().ToString());
+        var actor = _actorProxyFactory.CreateActorProxy<IMessageActor>(
+            actorId,
+            "MessageActor");
 
-        var message = new Message
-        {
-            Id = Guid.NewGuid().ToString(),
-            UserId = userId,
-            Content = content,
-            IsAcknowledged = false,
-            Timestamp = DateTime.UtcNow,
-            RetryAttempts = 0,
-            MaxRetryAttempts = 3,
-            MessageTimeout = TimeSpan.FromHours(24)
-        };
-
-        try
-        {
-            _context.Messages.Add(message);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Message {MessageId} saved successfully", message.Id);
-
-            if (NotificationHub.IsUserConnected(userId))
-            {
-                await _hubContext.Clients.User(userId)
-                    .SendAsync("ReceiveMessage", message.Id, content);
-                _logger.LogInformation("Message {MessageId} sent to connected user {UserId}", message.Id, userId);
-            }
-            else
-            {
-                _logger.LogInformation("User {UserId} not connected. Message {MessageId} will be delivered when user connects", userId, message.Id);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending message {MessageId} to user {UserId}", message.Id, userId);
-            throw;
-        }
-
-        return message;
+        return await actor.SendMessageAsync(userId, content);
     }
 }
